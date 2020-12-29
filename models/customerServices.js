@@ -2,6 +2,7 @@ const moment = require('moment')
 const connection = require('../infrastructure/connection')
 
 class CustomerServices {
+
     create(customerService, res) {
         // CREATING AND FORMATTING DATES
         const dateCreatedAt = moment().format('YYYY-MM-DD HH:MM:SS')
@@ -31,28 +32,65 @@ class CustomerServices {
         } else {
             const serviceWithDate = {...customerService, dateCreatedAt, date}
 
-            const sql = 'INSERT INTO customerServices SET ?'
+            const sql = `INSERT INTO customerServices SET ?`
 
-            connection.query(sql, serviceWithDate, (error, result) => {
+            connection.query(sql, serviceWithDate, (error, results) => {
                 if(error)
                     res.status(400).json(error)
                 else
-                    res.status(201).json(result)
+                    res.status(201).json(customerService)
             })
         }
 
     }
 
-    read() {
+    read(res) {
+        const sql = `SELECT * FROM customerservices`
 
+        connection.query(sql, (error, results) => {
+            if(error)
+                res.status(400).json(error)
+            else
+                res.status(200).json(results)
+        })
     }
 
-    update() {
+    update(id, values, res) {
+        if(values.date)
+            values.date = moment(values.date, 'DD/MM/YYYY').format('YYYY-MM-DD HH:MM:SS')
 
+        const sql = `UPDATE customerservices SET ? WHERE id=?`
+
+        connection.query(sql, [values, id], (error, results) => {
+            if(error)
+                res.status(400).json(error)
+            else
+                res.status(200).json({...values, id})
+        })
     }
 
-    delete() {
+    delete(id, res) {
+        const sql = `DELETE FROM customerservices WHERE id=${id}`
 
+        connection.query(sql, id, (error, results) => {
+            if(error)
+                res.status(400).json(error)
+            else
+                res.status(200).json({id})
+        })
+    }
+
+    searchId(id, res) {
+        const sql = `SELECT * FROM customerservices WHERE id=${id}`
+
+        connection.query(sql, (error, results) => {
+            const service = results[0]
+
+            if(error)
+                res.status(400).json(error)
+            else
+                res.status(200).json(service)
+        })
     }
 }
 
